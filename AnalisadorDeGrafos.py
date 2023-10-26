@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import os
 
+#Função responsável por ler e colocar os pesos no grafo
 def adicionaPesos(G, arquivo):
     graphml = open(arquivo, "r")
    
@@ -34,22 +35,27 @@ def adicionaPesos(G, arquivo):
     graphml.close()
     return
 
+#Retorna a ordem dos grafos
 def ordem(grafo):
     ordem = grafo.number_of_nodes()
     return ordem
 
+#Retorna o tamanho dos grafos
 def tamanho(grafo):
     tamanho = grafo.number_of_edges()
     return tamanho
 
+#Retorna a lista dos vizinhos de um vértice
 def vizinhos(grafo, vertice):
     vizinhos = list(grafo.adj[vertice])
     return vizinhos
 
+#Retorna o grau de um vértice
 def grau(grafo, vertice):
     grau = grafo.degree[vertice]
     return grau
 
+#Retorna a Sequência de Graus de um grafo
 def sequenciaGraus(grafo):
     listaDeGraus = []
     for i in range(ordem(grafo)):
@@ -57,6 +63,7 @@ def sequenciaGraus(grafo):
         listaDeGraus.sort(reverse = True)
     return listaDeGraus
 
+#Retorna a distancia entre dois vértices
 def distancia(grafo, vertice1, vertice2):
     
     try:
@@ -66,6 +73,7 @@ def distancia(grafo, vertice1, vertice2):
     except:
         return "infinita"
 
+#Retorna a excentricidade de um vértice
 def excentricidade(grafo, vertice):
     try:
         excent = nx.eccentricity(grafo, v = vertice, weight = 'weight')
@@ -73,36 +81,36 @@ def excentricidade(grafo, vertice):
     except:
         return "infinita"
 
-def descobreTodasExcentricidades(grafo):
-    x = []
-    for i in range (ordem(grafo)):
-        x.append(excentricidade(grafo, str(i)))
-    return x
-        
+#Retorna o Raio de um grafo        
 def raio2(grafo):
     try:
         return nx.radius(G = grafo, weight = "weight")
     except:
         return "infinito"
 
+#Retorna o diametro do grafo
 def diametro2(grafo):
     try:
         return nx.diameter(grafo, weight = "weight")
     except:
         return "infinito"
 
+#Retorna os vertices que são o centro do grafo
 def centro2(grafo):
     try:
         return list(nx.center(G = grafo, weight = "weight"))
     except:
         return "Considerando que todos os raios sao infinitos, todos os vertices fazem parte do centro\n" + str(nx.nodes(grafo))      #Perguntar se são todos os vértices
 
+#Retorna o menor caminho de um vértice para todos os outros do grafo
 def menorCaminho(grafo, vertice):
     return nx.shortest_path(grafo, source = vertice, weight = "weight")
 
+#Função que executa a busca em largura em um grafo
 def buscaEmLargura(grafo, vertice):
     return nx.bfs_tree(grafo, source = vertice)
 
+#Função que retorna as arestas que não entraram na árvore da busca em largura
 def arestasRemovidas(grafo, arvore):
     arestas = []
     arestasGrafo = nx.generate_edgelist(G = grafo)    
@@ -118,9 +126,11 @@ def arestasRemovidas(grafo, arvore):
             arestas.append(arestaGrafo[0:3])
     return arestas
 
+#Função que verifica se duas arestas são iguais
 def arestasSaoIguais(i, j):
     return ((i[0] == j[0] and i[2] == j[2]) or (i[0] == j[2] and i[2] == j[0]))
 
+#Função que calcula a centralidade do Grafo
 def centralidade (grafo, vertice):
     nVertices = ordem(grafo)
     soma = 0
@@ -133,12 +143,14 @@ def centralidade (grafo, vertice):
     cent = (nVertices - 1)/soma
     return cent
 
+#Função que formata e retorna uma string apenas com o id dos vértices
 def pegaVertices(vet):
     caractere = caractere = "[],' "
     for i in range(0, len(caractere)):
             vet = vet.replace(caractere[i], "")
     return vet
 
+#Pega todos os vértices diferentes entre duas listas de vértices
 def pegaDiferentes(vet1, vet2):
     
     for i in range(0, len(vet2)):
@@ -208,7 +220,7 @@ while controleMenu == 1:
         arvore = buscaEmLargura(grafo, str(n))
         vetorUsados = []
         
-        if(nx.is_forest(arvore)):
+        if(nx.is_forest(arvore)): #Verifica se o grafo gerado pela Busca em Largura é uma floresta
             
             diferentes = pegaDiferentes((pegaVertices(str(nx.nodes(grafo)))), (pegaVertices(str(nx.nodes(arvore)))))
             i = 0
