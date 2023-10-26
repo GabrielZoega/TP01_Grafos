@@ -128,6 +128,8 @@ def centralidade (grafo, vertice):
     for i in range(nVertices):
         if (distancia(grafo, vertice, str(i)) != "infinita"):
             soma += distancia(grafo, vertice, str(i))
+        else:
+            return 0 
     cent = (nVertices - 1)/soma
     return cent
 
