@@ -220,7 +220,7 @@ while controleMenu == 1:
         arvore = buscaEmLargura(grafo, str(n))
         vetorUsados = []
         
-        if(nx.is_forest(arvore)): #Verifica se o grafo gerado pela Busca em Largura é uma floresta
+        if(raio2(grafo) == "infinito"): #Verifica se o grafo gerado pela Busca em Largura é desconexo
             
             diferentes = pegaDiferentes((pegaVertices(str(nx.nodes(grafo)))), (pegaVertices(str(nx.nodes(arvore)))))
             i = 0
