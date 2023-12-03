@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import os
-import platform
+from sys import maxsize
+import re
 
 #Função responsável por ler e colocar os pesos no grafo
 def adicionaPesos(G, arquivo):
@@ -35,6 +36,26 @@ def adicionaPesos(G, arquivo):
             G.add_edge(source, target, weight = float(peso))
     graphml.close()
     return
+
+def somaPesos(arquivo):
+    somaPeso = 0
+    graphml = open(arquivo, "r")
+        
+    for linha in graphml:
+        
+        if linha.find("data ") != -1:
+            peso = ""
+            pesoIndice = linha.find("d1") + 4
+
+            while(linha[pesoIndice] != '<'):
+                peso += linha[pesoIndice]
+                pesoIndice = pesoIndice + 1
+
+            if (peso[0] != ' '):
+                somaPeso += (float)(peso)
+        
+    graphml.close()
+    return somaPeso
 
 #Retorna a ordem dos grafos
 def ordem(grafo):
@@ -159,14 +180,59 @@ def pegaDiferentes(vet1, vet2):
     
     return vet1
 
-#def ciclos():
-    #simple_cycles(G[, length_bound])
+def arvoreGeradoraMinima(grafo):
+    teste = (nx.minimum_spanning_tree(grafo, weight = "weight", algorithm = "kruskal")) 
+    nx.draw(teste, with_labels=True, font_weight='bold')
+    nx.write_graphml(teste, 'arvoreGeradoraMinima.graphml')
+    plt.show()
+    print("\n\tPeso total da arvore: " + str(somaPesos('arvoreGeradoraMinima.graphml')))
+
+def menorCiclo(grafo):
+    
+    grafoAux = grafo
+    min_ciclo = maxsize
+    ciclo = []
+    tam = tamanho(grafoAux)
+    arestas = list(nx.generate_edgelist(grafo))
+
+    for i in range(tam):        
+        e = arestas[i]
+  
+        peso = nx.path_weight(grafoAux, [e[0], e[2]], weight = "weight")
+        grafoAux.remove_edge(e[0], e[2])
+        
+        dist = distancia(grafoAux, e[0], e[2])
+
+        min_ciclo = min(min_ciclo, dist + peso)
+        
+        if (dist + peso == min_ciclo):
+            ciclo.append(e)
+
+        grafoAux.add_edge(e[0], e[2], weight = peso)
+
+    return ciclo
+    
+
+# DFS algorithm
+#def dfs(graph, start, visited=None):
+#    if visited is None:
+#        visited = set()
+#    visited.add(start)
+#
+#    print(start)
+#
+#    for next in graph[start] - visited:
+#        dfs(graph, next, visited)
+#    return visited
 
 
+#graph = {'0': set(['1', '2']),
+#         '1': set(['0', '3', '4']),
+#         '2': set(['0']),
+#         '3': set(['1']),
+#         '4': set(['2', '3'])}
 
-
-
-
+#dfs(graph, '0')
 
 # Main ---------------------------------------------------------------------------------------------------------------------------------------------
 controleMenu = 1
@@ -175,14 +241,12 @@ grafo = nx.read_graphml(path = caminhoGrafo)
 adicionaPesos(grafo, caminhoGrafo)
 
 
-
-
 while controleMenu == 1:    
     print("Selecione a atividade que deseja fazer com o grafo:")
     print(" 1- Ordem\n 2- Tamanho\n 3- Vizinhos de um vertice fornecido\n 4- Grau de um vertice fornecido")
     print(" 5- Sequencia de graus do grafo\n 6- Distancia entre dois vertices\n 7- Menor caminho de um vertice fornecido")
     print(" 8- Excentricidade de um vertice fornecido\n 9- Raio\n10- Diametro\n11- Centro\n12- Busca em largura\n13- Centralidade")
-    print("14- verificar se possui ciclo\n15- Encontrar menor ciclo\n16- Encontrar arvore geradora minima\n17- Conjunto Estavel\n18- Emparalelhamento maximo")
+    print("14- Verificar se possui ciclo\n15- Encontrar menor ciclo\n16- Encontrar arvore geradora minima\n17- Conjunto Estavel\n18- Emparalelhamento maximo")
    
     menu = int(input("Opcao escolhida: "))
     if menu == 1:
@@ -216,7 +280,6 @@ while controleMenu == 1:
         n = int(input("\n\tCom qual vertice deseja trabalhar:"))
         print("\tExcentricidade: " + str(excentricidade(grafo,str(n))) + "\n")
 
-   
     elif menu == 9:
         print("\n\tRaio: " + str(raio2(grafo)) + "\n") 
    
@@ -264,23 +327,26 @@ while controleMenu == 1:
 
     elif menu == 14:
         try:
-            print(nx.find_cycle(grafo))
+            nx.find_cycle(grafo)
+            print("\n\tO grafo possui ciclo.")
         except:
-            print("Esse grafo nao possui ciclos!")
+            print("\n\tEsse grafo nao possui ciclos!")
+    
     elif menu == 15:
-        print(nx.minimum_cycle_basis(grafo, weight="weight"))
-            
+        print("\n\tArestas que fazem parte do menor ciclo: \n")
+        for aresta in menorCiclo(grafo):
+            print("\t" + aresta)
+        
+        print()
+
     elif menu == 16:
-        teste = (nx.minimum_spanning_tree(grafo, weight = "weight", algorithm = "kruskal"))
-        nx.draw(teste, with_labels=True, font_weight='bold')
-        nx.write_graphml_xml(teste, 'arvoreGeradoraMinima.graphml')
-        plt.show() 
+        arvoreGeradoraMinima(grafo)
     
     elif menu == 17: 
-        print(nx.approximation.maximum_independent_set(grafo))
+        print("\n\t" + nx.approximation.maximum_independent_set(grafo))
     
     elif menu == 18:
-        print(nx.max_weight_matching(grafo, weight = "weight"))
+        print("\n\t" + nx.max_weight_matching(grafo, weight = "weight"))
 
     option = int (input("Deseja imprimir o seu grafo na tela? \n 0: Nao \n 1: Sim \n"))
     if option == 1:
@@ -288,5 +354,9 @@ while controleMenu == 1:
         plt.show()
     
     controleMenu = int(input("Deseja testar outra funcao? \n0: Nao \n1: Sim \n"))
-    os.system('cls')
+    
+    if os.name == "nt":
+        os.system('cls')
+    if os.name == "posix":
+        os.system('clear')
     # ------------------------------------------------------------------------------------------------------------------------------------------
