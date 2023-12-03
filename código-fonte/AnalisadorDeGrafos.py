@@ -37,6 +37,7 @@ def adicionaPesos(G, arquivo):
     graphml.close()
     return
 
+# Soma os pesos de uma grafo passado como graphml (gerado por uma função)
 def somaPesos(arquivo):
     somaPeso = 0
     graphml = open(arquivo, "r")
@@ -180,6 +181,7 @@ def pegaDiferentes(vet1, vet2):
     
     return vet1
 
+# Acha a Árovore geradora mínima usando a função pronta minimum_spanning_tree
 def arvoreGeradoraMinima(grafo):
     teste = (nx.minimum_spanning_tree(grafo, weight = "weight", algorithm = "kruskal")) 
     nx.draw(teste, with_labels=True, font_weight='bold')
@@ -187,6 +189,7 @@ def arvoreGeradoraMinima(grafo):
     plt.show()
     print("\n\tPeso total da arvore: " + str(somaPesos('arvoreGeradoraMinima.graphml')))
 
+# Utiliza o conceito de menor caminho de um grafo para achar o menor ciclo
 def menorCiclo(grafo):
     
     grafoAux = grafo
@@ -195,14 +198,23 @@ def menorCiclo(grafo):
     tam = tamanho(grafoAux)
     arestas = list(nx.generate_edgelist(grafo))
 
+    arestasOrdenadas = []
+    for i in range(tam):
+        menorPeso = maxsize
+        for aresta in arestas:
+            if(nx.path_weight(grafoAux, [aresta[0], aresta[2]], weight = "weight") <= menorPeso):
+                menorAresta = aresta
+                menorPeso = nx.path_weight(grafoAux, [aresta[0], aresta[2]], weight = "weight")
+        arestasOrdenadas.append(menorAresta)
+        arestas.remove(menorAresta)
+
     for i in range(tam):        
-        e = arestas[i]
+        e = arestasOrdenadas[i]
   
         peso = nx.path_weight(grafoAux, [e[0], e[2]], weight = "weight")
         grafoAux.remove_edge(e[0], e[2])
         
         dist = distancia(grafoAux, e[0], e[2])
-
         min_ciclo = min(min_ciclo, dist + peso)
         
         if (dist + peso == min_ciclo):
@@ -210,29 +222,13 @@ def menorCiclo(grafo):
 
         grafoAux.add_edge(e[0], e[2], weight = peso)
 
-    return ciclo
-    
+    grafoFinal = nx.Graph()
+    for aresta in ciclo:
+        grafoFinal.add_edge(aresta[0], aresta[2], weight = nx.path_weight(grafoAux, [aresta[0], aresta[2]], weight = "weight"))
 
-# DFS algorithm
-#def dfs(graph, start, visited=None):
-#    if visited is None:
-#        visited = set()
-#    visited.add(start)
-#
-#    print(start)
-#
-#    for next in graph[start] - visited:
-#        dfs(graph, next, visited)
-#    return visited
+    return nx.find_cycle(grafoFinal)
 
 
-#graph = {'0': set(['1', '2']),
-#         '1': set(['0', '3', '4']),
-#         '2': set(['0']),
-#         '3': set(['1']),
-#         '4': set(['2', '3'])}
-
-#dfs(graph, '0')
 
 # Main ---------------------------------------------------------------------------------------------------------------------------------------------
 controleMenu = 1
@@ -335,7 +331,7 @@ while controleMenu == 1:
     elif menu == 15:
         print("\n\tArestas que fazem parte do menor ciclo: \n")
         for aresta in menorCiclo(grafo):
-            print("\t" + aresta)
+            print("\t" + str(aresta))
         
         print()
 
@@ -343,10 +339,10 @@ while controleMenu == 1:
         arvoreGeradoraMinima(grafo)
     
     elif menu == 17: 
-        print("\n\t" + nx.approximation.maximum_independent_set(grafo))
+        print("\n\t" + str(nx.approximation.maximum_independent_set(grafo)))
     
     elif menu == 18:
-        print("\n\t" + nx.max_weight_matching(grafo, weight = "weight"))
+        print("\n\t" + str(nx.max_weight_matching(grafo, weight = "weight")))
 
     option = int (input("Deseja imprimir o seu grafo na tela? \n 0: Nao \n 1: Sim \n"))
     if option == 1:
